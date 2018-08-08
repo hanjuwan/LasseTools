@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lasselindh.lassetools.BuildConfig;
 import com.lasselindh.lassetools.R;
 
 import java.io.BufferedReader;
@@ -85,7 +86,7 @@ public class LasseTools {
 
                 String content =
 //                    "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+
-                        "<html><head><title>LasseTools</title>"+
+                        "<html><head><title>LasseTools(" + BuildConfig.VERSION_NAME + ")</title>"+
                                 "</head></html>";
                 mWebView.loadDataWithBaseURL("", content, "text/html", "UTF-8", "http://lasselindh.tistory.com/");
             }
@@ -97,24 +98,42 @@ public class LasseTools {
             activityStack.put(name.getClass().getSimpleName(), name);
     }
 
-    public static void CToast(Context context, String text) {
-        if(mCToast != null && mCToast.getView().getVisibility() == View.VISIBLE) {
-            mCToast.cancel();
+    private static Toast toast;
+    private static String mMsg = "";
+    private static long mPrevTime = 0;
+    public static void DToast(Context context, String msg) {
+        String preString = "";
+        if(toast != null && toast.getView().getVisibility() == View.VISIBLE) {
+            toast.cancel();
+            if(mPrevTime != 0 && System.currentTimeMillis() - mPrevTime > 2000) {
+                preString = "";
+            } else {
+                preString = mMsg;
+            }
         }
 
-        String path = context.getClass().getName();
+        if(!"".equals(preString)) {
+            msg = preString + "\n" + msg;
+        }
+
+        mMsg = msg;
+        toast = new Toast(context);
+
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.lasse_toast, null);
-        ((LinearLayout)view.findViewById(R.id.ctoast_layout)).setBackgroundColor(PreferenceManager.getDefaultSharedPreferences(context).getInt("color", Color.parseColor("#656D78")));
-        TextView tv = (TextView)view.findViewById(R.id.tv_toast);
-        tv.setText(text);
-        Toast toast = new Toast(context);
+        (view.findViewById(R.id.ctoast_layout)).setBackgroundColor(PreferenceManager.getDefaultSharedPreferences(context).getInt("color", Color.parseColor("#656D78")));
+        TextView tv = view.findViewById(R.id.tv_toast);
+        tv.setText(msg);
         toast.setView(view);
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 400);
         toast.setDuration(Toast.LENGTH_LONG);
 
-        mCToast = toast;
-        mCToast.show();
+
+        toast.setGravity(Gravity.CENTER_VERTICAL, 0, -220);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.show();
+
+        mPrevTime = System.currentTimeMillis();
     }
 
     public  boolean isDevModeEnabled() {
@@ -308,6 +327,7 @@ public class LasseTools {
                     try {
                         Class<?> cls = mObject.getClass();
                         Method method = cls.getMethod(mOkMethod);
+                        method.setAccessible(true);
                         method.invoke(mObject);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -331,6 +351,7 @@ public class LasseTools {
                             try {
                                 Class<?> cls = mObject.getClass();
                                 Method method = cls.getDeclaredMethod(mOkMethod, String.class);
+                                method.setAccessible(true);
                                 method.invoke(mObject, paramString);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -341,6 +362,7 @@ public class LasseTools {
                             try {
                                 Class<?> cls = mObject.getClass();
                                 Method method = cls.getDeclaredMethod(mOkMethod, int.class);
+                                method.setAccessible(true);
                                 method.invoke(mObject, paramInt);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -351,6 +373,7 @@ public class LasseTools {
                             try {
                                 Class<?> cls = mObject.getClass();
                                 Method method = cls.getDeclaredMethod(mOkMethod, boolean.class);
+                                method.setAccessible(true);
                                 method.invoke(mObject, paramBoolean);
                             } catch (Exception e) {
                                 e.printStackTrace();
